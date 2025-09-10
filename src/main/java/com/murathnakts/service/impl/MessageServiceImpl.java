@@ -26,10 +26,10 @@ public class MessageServiceImpl implements IMessageService {
     @Autowired
     private MessageRepository messageRepository;
 
-    private Message createMessage(DtoMessageIU dtoMessageIU) {
-        Optional<Group> optGroup = groupRepository.findById(dtoMessageIU.getGroupId());
+    private Message createMessage(Long groupId,DtoMessageIU dtoMessageIU) {
+        Optional<Group> optGroup = groupRepository.findById(groupId);
         if (optGroup.isEmpty()) {
-            throw new BaseException(new ErrorMessage(MessageType.GROUP_NOT_FOUND, dtoMessageIU.getGroupId().toString()));
+            throw new BaseException(new ErrorMessage(MessageType.GROUP_NOT_FOUND, groupId.toString()));
         }
         Message message = new Message();
         message.setCreateTime(new Date());
@@ -40,9 +40,9 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
-    public DtoMessage saveMessage(DtoMessageIU dtoMessageIU) {
+    public DtoMessage saveMessage(Long groupId,DtoMessageIU dtoMessageIU) {
         DtoMessage dtoMessage = new DtoMessage(); //Burada bir de user grupta mı diye kontrol et
-        Message newMessage = messageRepository.save(createMessage(dtoMessageIU));
+        Message newMessage = messageRepository.save(createMessage(groupId,dtoMessageIU));
         BeanUtils.copyProperties(newMessage, dtoMessage);
         return dtoMessage;
     }

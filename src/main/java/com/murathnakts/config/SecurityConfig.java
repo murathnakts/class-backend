@@ -31,7 +31,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(REGISTER, AUTHENTICATE, REFRESH_TOKEN).permitAll()
+                        .requestMatchers(REGISTER, AUTHENTICATE, REFRESH_TOKEN, "/ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
