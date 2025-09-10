@@ -16,9 +16,7 @@ import com.murathnakts.service.IAuthService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -80,7 +78,7 @@ public class AuthServiceImpl implements IAuthService {
             RefreshToken savedRefreshToken = refreshTokenRepository.save(createRefreshToken(optional.get()));
             return new AuthResponse(accessToken, savedRefreshToken.getRefreshToken());
         } catch (Exception e) {
-            throw new BaseException(new ErrorMessage(MessageType.USERNAME_OR_PASSWORD_INVALID, e.getMessage()));
+            throw new BaseException(new ErrorMessage(MessageType.USERNAME_OR_PASSWORD_INVALID, null));
         }
     }
 

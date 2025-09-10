@@ -10,6 +10,9 @@ public enum MessageType {
     USERNAME_OR_PASSWORD_INVALID("1007", "Username or password invalid"),
     REFRESH_TOKEN_NOT_FOUND("1008", "Refresh token not found"),
     REFRESH_TOKEN_EXPIRED("1009", "Refresh token expired"),
+    GROUP_NOT_FOUND("1010", "Group not found"),
+    USER_NOT_FOUND("1011", "User not found"),
+    USER_ALREADY_ADDED("1012", "User already added"),
     GENERAL_EXCEPTION("9999",  "General exception"),;
 
     private final String code;

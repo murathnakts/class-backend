@@ -2,6 +2,7 @@ package com.murathnakts.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,9 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "password")
     private String password;
+
+    @ManyToMany
+    private List<Group> groups;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
