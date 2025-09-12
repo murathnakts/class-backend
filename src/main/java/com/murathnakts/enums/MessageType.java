@@ -13,6 +13,8 @@ public enum MessageType {
     GROUP_NOT_FOUND("1010", "Group not found"),
     USER_NOT_FOUND("1011", "User not found"),
     USER_ALREADY_ADDED("1012", "User already added"),
+    USER_ALREADY_REGISTERED("1013", "User already registered"),
+    UNAUTHORIZED_USER("1014", "Unauthorized user"),
     GENERAL_EXCEPTION("9999",  "General exception"),;
 
     private final String code;

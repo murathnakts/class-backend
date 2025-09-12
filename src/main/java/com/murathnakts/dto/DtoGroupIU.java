@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class DtoGroupIU extends DtoBase {
+public class DtoGroupIU {
 
     @NotEmpty
     private String groupName;

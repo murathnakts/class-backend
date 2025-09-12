@@ -3,10 +3,7 @@ package com.murathnakts.controller.impl;
 import com.murathnakts.controller.base.BaseController;
 import com.murathnakts.controller.IAuthController;
 import com.murathnakts.controller.base.RootEntity;
-import com.murathnakts.dto.AuthRequest;
-import com.murathnakts.dto.AuthResponse;
-import com.murathnakts.dto.DtoUser;
-import com.murathnakts.dto.RefreshTokenRequest;
+import com.murathnakts.dto.*;
 import com.murathnakts.service.IAuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +19,8 @@ public class AuthControllerImpl extends BaseController implements IAuthControlle
 
     @PostMapping("/register")
     @Override
-    public RootEntity<DtoUser> register(@Valid @RequestBody AuthRequest request) {
-        return success(authService.register(request));
+    public RootEntity<DtoUser> register(@Valid @RequestBody DtoUserIU dtoUserIU) {
+        return success(authService.register(dtoUserIU));
     }
 
     @PostMapping("/login")

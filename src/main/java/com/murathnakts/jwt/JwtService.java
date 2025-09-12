@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +19,10 @@ public class JwtService {
 
     public static final String SECRET_KEY = "6Zd3mcyAW7oVujbs56ifZ37LbQ0nTep/sd7lvg++UH0=";
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2))
                 .signWith(getKey(), SignatureAlgorithm.HS256)
@@ -34,6 +37,10 @@ public class JwtService {
 
     public String getUsernameByToken(String token) {
         return exportToken(token, Claims::getSubject);
+    }
+
+    public Long getUserIdByToken(String token) {
+        return exportToken(token, claims -> claims.get("userId", Long.class));
     }
 
     public <E> E exportToken(String token, Function<Claims, E> claimsFunction) {
@@ -52,5 +59,10 @@ public class JwtService {
     public Key getKey() {
         byte[] bytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(bytes);
+    }
+
+    public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (Long) authentication.getPrincipal();
     }
 }

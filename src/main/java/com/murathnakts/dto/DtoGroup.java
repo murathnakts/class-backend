@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DtoGroup extends DtoBase {
+    private DtoUser creatorUser;
     private String groupName;
     private String description;
     private List<DtoUser> members;

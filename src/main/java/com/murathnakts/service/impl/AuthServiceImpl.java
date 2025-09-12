@@ -1,9 +1,6 @@
 package com.murathnakts.service.impl;
 
-import com.murathnakts.dto.AuthRequest;
-import com.murathnakts.dto.AuthResponse;
-import com.murathnakts.dto.DtoUser;
-import com.murathnakts.dto.RefreshTokenRequest;
+import com.murathnakts.dto.*;
 import com.murathnakts.entity.RefreshToken;
 import com.murathnakts.entity.User;
 import com.murathnakts.exception.BaseException;
@@ -42,11 +39,22 @@ public class AuthServiceImpl implements IAuthService {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
-    private User createUser(AuthRequest authRequest) {
+    private User findUserOrThrow(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.USER_NOT_FOUND, username)));
+    }
+
+    private Boolean isUsernameAvailable(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+
+    private User createUser(DtoUserIU dtoUserIU) {
         User user = new User();
         user.setCreateTime(new Date());
-        user.setUsername(authRequest.getUsername());
-        user.setPassword(bCryptPasswordEncoder.encode(authRequest.getPassword()));
+        user.setUsername(dtoUserIU.getUsername());
+        user.setPassword(bCryptPasswordEncoder.encode(dtoUserIU.getPassword()));
+        user.setRole(dtoUserIU.getRole());
         return user;
     }
 
@@ -60,11 +68,15 @@ public class AuthServiceImpl implements IAuthService {
     }
 
     @Override
-    public DtoUser register(AuthRequest request) {
-        DtoUser user = new DtoUser();
-        User savedUser = userRepository.save(createUser(request));
-        BeanUtils.copyProperties(savedUser, user);
-        return user;
+    public DtoUser register(DtoUserIU dtoUserIU) {
+        if (isUsernameAvailable(dtoUserIU.getUsername())) {
+            throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_REGISTERED, dtoUserIU.getUsername()));
+        } else {
+            DtoUser user = new DtoUser();
+            User savedUser = userRepository.save(createUser(dtoUserIU));
+            BeanUtils.copyProperties(savedUser, user);
+            return user;
+        }
     }
 
     @Override
@@ -73,9 +85,9 @@ public class AuthServiceImpl implements IAuthService {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
             authenticationManager.authenticate(authenticationToken);
-            Optional<User> optional = userRepository.findByUsername(request.getUsername());
-            String accessToken = jwtService.generateToken(optional.get());
-            RefreshToken savedRefreshToken = refreshTokenRepository.save(createRefreshToken(optional.get()));
+            User user = findUserOrThrow(request.getUsername());
+            String accessToken = jwtService.generateToken(user, user.getId());
+            RefreshToken savedRefreshToken = refreshTokenRepository.save(createRefreshToken(user));
             return new AuthResponse(accessToken, savedRefreshToken.getRefreshToken());
         } catch (Exception e) {
             throw new BaseException(new ErrorMessage(MessageType.USERNAME_OR_PASSWORD_INVALID, null));
@@ -96,7 +108,7 @@ public class AuthServiceImpl implements IAuthService {
             throw new BaseException(new ErrorMessage(MessageType.REFRESH_TOKEN_EXPIRED, request.getRefreshToken()));
         }
         User user = optional.get().getUser();
-        String accessToken = jwtService.generateToken(user);
+        String accessToken = jwtService.generateToken(user, user.getId());
         RefreshToken savedRefreshToken = refreshTokenRepository.save(createRefreshToken(user));
         return new AuthResponse(accessToken, savedRefreshToken.getRefreshToken());
     }

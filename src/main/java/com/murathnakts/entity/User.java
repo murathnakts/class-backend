@@ -1,9 +1,7 @@
 package com.murathnakts.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import com.murathnakts.enums.RoleType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +26,11 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "password")
     private String password;
 
-    @ManyToMany
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private RoleType role;
+
+    @ManyToMany(mappedBy = "members")
     private List<Group> groups;
 
     @Override

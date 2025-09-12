@@ -1,9 +1,6 @@
 package com.murathnakts.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +22,9 @@ public class Group extends BaseEntity {
     @Column(name = "description")
     private String description;
 
-    @ManyToMany(mappedBy = "groups")
+    @ManyToOne
+    private User creatorUser;
+
+    @ManyToMany
     private List<User> members;
 }

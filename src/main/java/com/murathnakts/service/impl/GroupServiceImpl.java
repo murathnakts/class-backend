@@ -6,8 +6,10 @@ import com.murathnakts.dto.DtoUser;
 import com.murathnakts.entity.Group;
 import com.murathnakts.entity.User;
 import com.murathnakts.enums.MessageType;
+import com.murathnakts.enums.RoleType;
 import com.murathnakts.exception.BaseException;
 import com.murathnakts.exception.ErrorMessage;
+import com.murathnakts.jwt.JwtService;
 import com.murathnakts.repository.GroupRepository;
 import com.murathnakts.repository.UserRepository;
 import com.murathnakts.service.IGroupService;
@@ -27,6 +29,9 @@ public class GroupServiceImpl implements IGroupService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtService jwtService;
 
     private User findUserOrThrow(Long userId) {
         return userRepository.findById(userId)
@@ -51,20 +56,33 @@ public class GroupServiceImpl implements IGroupService {
         return dtoGroup;
     }
 
-    private Group makeGroup(DtoGroupIU dtoGroupIU) {
+    private Group makeGroup(DtoGroupIU dtoGroupIU, User user) {
         Group group = new Group();
+        ArrayList<User> users = new ArrayList<>();
+        users.add(user);
+        group.setCreatorUser(user);
         group.setGroupName(dtoGroupIU.getGroupName());
         group.setDescription(dtoGroupIU.getDescription());
         group.setCreateTime(new Date());
+        group.setMembers(users);
         return group;
     }
 
     @Override
     public DtoGroup createGroup(DtoGroupIU dtoGroupIU) {
-        Group newGroup = groupRepository.save(makeGroup(dtoGroupIU));
+        User user = findUserOrThrow(jwtService.getCurrentUserId());
+        if (user.getRole().equals(RoleType.PARENT)) {
+            throw new BaseException(new ErrorMessage(MessageType.UNAUTHORIZED_USER, null));
+        }
+        Group newGroup = groupRepository.save(makeGroup(dtoGroupIU, user));
         DtoGroup dtoGroup = new DtoGroup();
+        DtoUser dtoUser = new DtoUser();
+        BeanUtils.copyProperties(user, dtoUser);
         BeanUtils.copyProperties(newGroup, dtoGroup);
-        dtoGroup.setMembers(new ArrayList<>());
+        List<DtoUser> dtoUsers = new ArrayList<>();
+        dtoUsers.add(dtoUser);
+        dtoGroup.setMembers(dtoUsers);
+        dtoGroup.setCreatorUser(dtoUser);
         return dtoGroup;
     }
 
@@ -75,9 +93,8 @@ public class GroupServiceImpl implements IGroupService {
         if (group.getMembers().stream().anyMatch(usr ->  usr.getId().equals(user.getId()))) {
             throw new BaseException(new ErrorMessage(MessageType.USER_ALREADY_ADDED, userId.toString()));
         }
-        user.getGroups().add(group);
         group.getMembers().add(user);
-        userRepository.save(user);
+        groupRepository.save(group);
         return convertDto(group);
     }
 
